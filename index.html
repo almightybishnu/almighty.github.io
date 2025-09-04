@@ -17,7 +17,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./assets/css/style.css" />
+
   <style>
+    /* --------- local overrides --------- */
     .title { color: #3a7d44; }
     .kpi-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
     .kpi {background:#1f2937; color:#ffffff; padding:12px;border-radius:12px;text-align:center;border:1px solid rgba(255,255,255,.15)}
@@ -29,7 +31,7 @@
     .navbar .navbar-link[aria-current="page"]{color:#3a7d44}
     .contact .form-btn[disabled]{opacity:.6}
 
-    /* Avatar styles */
+    /* Avatar */
     .avatar {
       width: 148px; height: 148px;
       border-radius: 50%;
@@ -39,23 +41,49 @@
       margin: 0 0 12px;
       background:#fff;
     }
-    .avatar img {
-      width: 100%; height: 100%;
-      object-fit: cover; display:block;
-    }
+    .avatar img { width:100%; height:100%; object-fit:cover; display:block; }
 
-    /* === Make dark sections readable === */
+    /* Readable on dark sections (Projects) */
     .on-dark { color:#fff; }
-    .on-dark h1, .on-dark h2, .on-dark h3, .on-dark h4,
-    .on-dark p, .on-dark li, .on-dark small, .on-dark span,
-    .on-dark .project-title, .on-dark .project-category, .on-dark .project-description {
-      color:#fff;
-    }
+    .on-dark h1,.on-dark h2,.on-dark h3,.on-dark h4,
+    .on-dark p,.on-dark li,.on-dark small,.on-dark span,
+    .on-dark .project-title,.on-dark .project-category,.on-dark .project-description { color:#fff; }
     .on-dark a { color:#9dd6ff; }
     .on-dark .project-description { text-shadow:0 1px 2px rgba(0,0,0,.6); }
-    .highlight-pill {
-      display:inline-block; background:rgba(255,255,255,.08);
-      padding:.4rem .6rem; border-radius:.5rem; backdrop-filter:blur(2px);
+    .highlight-pill { display:inline-block; background:rgba(255,255,255,.08); padding:.4rem .6rem; border-radius:.5rem; backdrop-filter:blur(2px); }
+
+    /* ==== Mobile overlap hard-fix ==== */
+    @media (max-width: 768px){
+      /* Let the sidebar (with photo) flow in document order */
+      .sidebar{
+        position: static !important;
+        transform: none !important;
+        margin: 0 0 16px 0 !important;
+        z-index: auto !important;
+      }
+      /* Space for content beneath the sidebar */
+      .main-content{
+        margin: 0 !important;
+        padding-top: 8px !important;
+      }
+      .main-content > article:first-of-type{
+        margin-top: 32px !important; /* bump to 24–32px if still tight */
+      }
+      /* Bottom navbar: stick without covering content */
+      .navbar{
+        position: sticky !important;
+        bottom: 0;
+        top: auto !important;
+        z-index: 1000;
+        background: #1e1e1e;
+        border-top: 1px solid rgba(255,255,255,.08);
+        backdrop-filter: blur(8px);
+      }
+      /* Reserve space for the navbar (JS sets --nav-h precisely) */
+      :root{ --nav-h: 64px; } /* fallback */
+      main{
+        padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom)) !important;
+      }
     }
   </style>
 </head>
@@ -64,8 +92,8 @@
     <!-- Sidebar -->
     <aside class="sidebar" data-sidebar>
       <div class="sidebar-info">
-        <!-- NEW: profile image -->
         <div class="avatar" aria-hidden="true">
+          <!-- update src if your file path is different -->
           <img src="./assets/images/bishnu.jpg" alt="Portrait of Bishnu Gautam" loading="lazy" width="148" height="148" />
         </div>
 
@@ -108,7 +136,7 @@
       </nav>
 
       <article class="about active" data-page="about">
-        <header><h2 class="h2 article-title">About me</h2></header>
+        <header><h2 class="h2 article-title">About Me</h2></header>
         <section class="about-text">
           <p>I am a Fisheries Development Officer based in Nepal, focused on aquaculture development, farmer extension, and sustainable management of freshwater resources. I work across community ponds, hatcheries, and cooperative groups to improve productivity while safeguarding biodiversity and water quality.</p>
           <p>My work blends <span class="badge">technical advisory</span> with <span class="badge">hands-on field support</span>—from pond design and seed stocking plans to feed budgeting, health management, and market linkage. I collaborate with local governments and NGOs to implement inclusive programs that raise household income and food security.</p>
@@ -188,6 +216,8 @@
       </article>
     </div>
   </main>
+
+  <!-- Tabs script -->
   <script>
   (function(){
     const buttons = Array.from(document.querySelectorAll('.navbar .navbar-link'));
@@ -207,54 +237,23 @@
       try { history.replaceState(null, '', `#${target}`); } catch(_) {}
     }));
     const hash = (location.hash || '').replace('#','').toLowerCase();
-    if(hash && pages.some(a => a.dataset.page === hash)) {
-      show(hash);
-    } else { show('about'); }
+    if(hash && pages.some(a => a.dataset.page === hash)) { show(hash); } else { show('about'); }
+  })();
+  </script>
+
+  <!-- Mobile navbar height → padding (prevents overlap) -->
+  <script>
+  (function(){
+    function setNavPadding(){
+      var nav = document.querySelector('.navbar');
+      if(!nav) return;
+      var h = nav.offsetHeight || 64;
+      document.documentElement.style.setProperty('--nav-h', h + 'px');
+    }
+    window.addEventListener('load', setNavPadding);
+    window.addEventListener('resize', setNavPadding);
+    setNavPadding();
   })();
   </script>
 </body>
 </html>
-  <!-- Existing script (tab switching) -->
-  <script>
-  (function(){
-    const buttons = Array.from(document.querySelectorAll('.navbar .navbar-link'));
-    const pages = Array.from(document.querySelectorAll('article[data-page]'));
-    function show(page){
-      pages.forEach(a => a.classList.toggle('active', a.dataset.page === page));
-      buttons.forEach(b => {
-        const on = (b.dataset.target || b.textContent.trim().toLowerCase()) === page;
-        b.classList.toggle('active', on);
-        if(on){ b.setAttribute('aria-current','page'); } else { b.removeAttribute('aria-current'); }
-      });
-    }
-    buttons.forEach(b => b.addEventListener('click', e => {
-      e.preventDefault();
-      const target = (b.dataset.target || b.textContent.trim().toLowerCase());
-      show(target);
-      try { history.replaceState(null, '', `#${target}`); } catch(_) {}
-    }));
-    const hash = (location.hash || '').replace('#','').toLowerCase();
-    if(hash && pages.some(a => a.dataset.page === hash)) {
-      show(hash);
-    } else { show('about'); }
-  })();
-  </script>
-
-  <!-- NEW: mobile navbar padding helper (place this AFTER the script above) -->
-  <script>
-  (function(){
-    const nav = document.querySelector('.navbar');
-    if(!nav) return;
-    function setPad(){
-      const h = nav.offsetHeight || 64;  // adjust if your nav is taller/shorter
-      document.body.style.paddingBottom = `calc(${h}px + env(safe-area-inset-bottom))`;
-      const mc = document.querySelector('.main-content');
-      if(mc) mc.style.paddingBottom = `calc(${h}px + env(safe-area-inset-bottom))`;
-    }
-    setPad();
-    window.addEventListener('resize', setPad);
-  })();
-  </script>
-</body>
-</html>
-
