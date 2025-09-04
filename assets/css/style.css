@@ -1880,3 +1880,33 @@ textarea.form-input::-webkit-resizer { display: none; }
   .timeline-text { max-width: 700px; }
 
 }
+/* ==== Mobile overlap fixes ==== */
+@media (max-width: 768px){
+
+  /* Keep navbar at bottom but don't cover content */
+  .navbar{
+    position: sticky !important;
+    bottom: 0;
+    z-index: 1000;
+    background: #1e1e1e;            /* your dark theme */
+    border-top: 1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Give the page room below equal to nav height (approx 64px) + iOS safe area */
+  body, .main-content{
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+
+  /* Small gap between the sidebar block and the first article */
+  .main-content > article:first-of-type{
+    margin-top: 12px;
+  }
+
+  /* Make sure sidebar block sits above flowing content (no clipping) */
+  .sidebar{
+    position: relative;
+    z-index: 2;
+    margin-bottom: 12px;
+  }
+}
