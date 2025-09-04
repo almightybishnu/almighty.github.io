@@ -214,3 +214,47 @@
   </script>
 </body>
 </html>
+  <!-- Existing script (tab switching) -->
+  <script>
+  (function(){
+    const buttons = Array.from(document.querySelectorAll('.navbar .navbar-link'));
+    const pages = Array.from(document.querySelectorAll('article[data-page]'));
+    function show(page){
+      pages.forEach(a => a.classList.toggle('active', a.dataset.page === page));
+      buttons.forEach(b => {
+        const on = (b.dataset.target || b.textContent.trim().toLowerCase()) === page;
+        b.classList.toggle('active', on);
+        if(on){ b.setAttribute('aria-current','page'); } else { b.removeAttribute('aria-current'); }
+      });
+    }
+    buttons.forEach(b => b.addEventListener('click', e => {
+      e.preventDefault();
+      const target = (b.dataset.target || b.textContent.trim().toLowerCase());
+      show(target);
+      try { history.replaceState(null, '', `#${target}`); } catch(_) {}
+    }));
+    const hash = (location.hash || '').replace('#','').toLowerCase();
+    if(hash && pages.some(a => a.dataset.page === hash)) {
+      show(hash);
+    } else { show('about'); }
+  })();
+  </script>
+
+  <!-- NEW: mobile navbar padding helper (place this AFTER the script above) -->
+  <script>
+  (function(){
+    const nav = document.querySelector('.navbar');
+    if(!nav) return;
+    function setPad(){
+      const h = nav.offsetHeight || 64;  // adjust if your nav is taller/shorter
+      document.body.style.paddingBottom = `calc(${h}px + env(safe-area-inset-bottom))`;
+      const mc = document.querySelector('.main-content');
+      if(mc) mc.style.paddingBottom = `calc(${h}px + env(safe-area-inset-bottom))`;
+    }
+    setPad();
+    window.addEventListener('resize', setPad);
+  })();
+  </script>
+</body>
+</html>
+
